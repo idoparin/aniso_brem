@@ -1,0 +1,24 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "numpy"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "aniso-brem"
+version = "0.1.0"
+description = "Relativistic/anisotropic electron-electron bremsstrahlung cross sections"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["numpy"]
+license = { text = "MIT" }
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+examples = ["matplotlib>=3.5"]
+dev = ["meson>=1.2", "ninja>=1.11", "pytest>=7", "matplotlib>=3.5"]
+
+[tool.scikit-build]
+wheel.packages = ["src/aniso_brem"]
+minimum-version = "0.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

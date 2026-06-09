@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.so
+*.mod
+*.o
+*.a
+build/
+dist/
+*.egg-info/
+.eggs/
+.ipynb_checkpoints/
+*.pdf
+.env
