@@ -21,7 +21,7 @@ def main() -> None:
     parser.add_argument(
         "--electron-energy",
         type=float,
-        default=1.0e4, # 1.5e4,
+        default=1.5e4,
         help="Electron kinetic energy in keV (default: 15000)",
     )
     parser.add_argument(
