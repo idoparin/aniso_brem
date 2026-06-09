@@ -1,0 +1,31 @@
+#!/bin/bash
+# Build the Fortran extension and install the Python package.
+#
+# Default (recommended): editable install via scikit-build-core + CMake.
+#   bash compex
+#   -> pip install -e .
+#   -> use: from aniso_brem import eebls, cspe, ...
+#
+# Legacy in-place .so in project root (optional):
+#   bash compex --inplace
+#   -> requires meson + ninja on Python >= 3.12
+#   -> use: import cseqs; cseqs.cseqs.eebls(...)
+
+set -euo pipefail
+cd "$(dirname "$0")"
+
+if [[ "${1:-}" == "--inplace" ]]; then
+  if python -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 12) else 1)"; then
+    if ! command -v meson >/dev/null 2>&1; then
+      echo "Python >= 3.12: f2py uses the meson backend. Installing meson and ninja..."
+      python -m pip install meson ninja
+    fi
+  fi
+  python -m numpy.f2py -c -m cseqs fortran/cseqs.f95 fortran/dilog490.f
+  echo "Built ./cseqs*.so in project root."
+  echo "Import with: python -c \"import cseqs; print(cseqs.cseqs.eebls(1500, 100, 200))\""
+else
+  python -m pip install -e .
+  echo "Installed editable package 'aniso_brem'."
+  echo "Import with: python -c \"from aniso_brem import eebls; print(eebls(1500, 100, 200))\""
+fi
