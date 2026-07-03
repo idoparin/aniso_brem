@@ -224,14 +224,12 @@ contains
     end if
 
     allocate(theta(n_theta), phi(n_phi), cskew(n_phi), csket(n_theta))
-    theta(1) = 0d0
-    do i = 2, n_theta
-      theta(i) = dble(i)*pi/dble(n_theta)
+    do i = 1, n_theta
+      theta(i) = dble(i - 1)*pi/dble(n_theta - 1)
     end do
 
-    phi(1) = 0d0
-    do j = 2, n_phi
-      phi(j) = dble(j)*2d0*pi/dble(n_phi)
+    do j = 1, n_phi
+      phi(j) = dble(j - 1)*2d0*pi/dble(n_phi - 1)
     end do
 
     do i = 1, n_theta
