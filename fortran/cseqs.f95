@@ -1,7 +1,7 @@
 ! cseqs.f95 -- compute fully relativistic isotropic (dsigma/dk) and 
 ! anisotropic cross-sections (dsigma/(dk domega)) of electron-ion 
 ! and electron-electron bremsstrahlung.
-! by I. Oparin <ido4@njit.edu>
+! by I. Oparin <ido4@njit.edu> 2019
 
 module cseqs
 
@@ -9,7 +9,7 @@ module cseqs
 
   private
 
-  public :: eebls,eeblsnr,eeblser,eebapx,eeba,cspe,cs1,integrate
+  public :: eebls,eeblsnr,eeblser,eebapx,eeba,cspe,cspax,cs1,integrate
   public pi,r0,c,ech,me,afs
 
   real(8), parameter :: pi=3.141592653589793d0, r0=2.817940322719e-13,&
@@ -74,6 +74,7 @@ contains
   end function eebls
 
   real(8) function chi(x)
+    use ieee_arithmetic, only: ieee_is_nan
     implicit none
     real(8), intent(in) :: x
     real(8) eps, p, k
@@ -188,13 +189,14 @@ contains
     chi=chi+((L3/p)*((b1/x)+(b2/(x+k))+(b3/(eps-1d0-x))))
     chi=chi-(2d0*k*L1/(x+k))
 
-    if(isnan(rho)) then
+    if(ieee_is_nan(rho)) then
       chi=0
     end if
 
   end function chi
 
   real(8) function sigma(x,num)
+    use ieee_arithmetic, only: ieee_is_nan
     implicit none
     integer, intent(in) :: num
     real(8), intent(in) :: x
@@ -314,13 +316,14 @@ contains
             /(eps-dsqrt(abs((2d0*k)-1d0))-x)) &
             *(((1d0/dsqrt(abs((2d0*k)-1d0)))*(eps+k-(3d0*eps*k)-1d0))+eps+(2d0*k)-1d0 &
             +(((eps/dsqrt(abs((2d0*k)-1d0)))+1d0)*((p**2)*k)/((p**2)+(2d0*k))))
-      if(isnan(sigma)) then
+      if(ieee_is_nan(sigma)) then
         sigma=0
       end if
     end if
   end function sigma
 
   real(8) function hg(eps,k,k0,x,num)
+    use ieee_arithmetic, only: ieee_is_nan
     implicit none
     integer, intent(in):: num
     real(8), intent(in) :: eps, k, k0, x
@@ -348,21 +351,21 @@ contains
       hg=(W7/(4d0*k))*dasin(((1d0+((k+ww)*(eps-k-x))))/(eps+ww-x)) &
       *(((1d0/ww)*((3d0*eps*k)-eps-k+1d0))+eps+(2d0*k)-1d0 &
       -(((eps/ww)-1d0)*((p**2)*k)/((p**2)+(2d0*k))))
-      if(isnan(hg)) then
+      if(ieee_is_nan(hg)) then
         
         hg=0
       end if
       hg=hg+(W8/(4d0*k))*dasin((1d0+((k-ww)*(eps-k-x)))/(eps-ww-x)) &
       *(((1d0/ww)*(eps+k-(3d0*eps*k)-1d0))+eps+(2d0*k)-1d0 &
       +(((eps/ww)+1d0)*((p**2)*k)/((p**2)+(2d0*k))))
-      if(isnan(hg)) then
+      if(ieee_is_nan(hg)) then
         hg=0
       end if
     else if (k==5d-1) then
       hg=(((3d0*eps/2d0)+(1d0/4d0)-(1d0/(2d0*eps)) &
       -(3d0/(4d0*(eps**2))))/(dsqrt(3d0)))
       hg=hg*dasin((5d-1)+(3d0/(4d0*(eps-x))))
-      if(isnan(hg)) then
+      if(ieee_is_nan(hg)) then
         hg=0
       end if
       hg=hg+(W*(eps+1d0)/(2d0*eps*(eps-x)))
@@ -370,7 +373,7 @@ contains
       hg=((r/ww)*(eps+k-(3d0*eps*k)-1d0))+(s*(eps+(2d0*k)-1d0)) &
       +(((eps*r/ww)+s)*(p**2)*k/((p**2)+(2d0*k)))
       hg=hg*(1d0/(2d0*k))*datan(v/u)
-      if(isnan(hg)) then
+      if(ieee_is_nan(hg)) then
         hg=0
       end if
       hg=(L0/(2d0*k))*(((s/ww)*(eps+k-(3d0*eps*k)-1d0)) &
@@ -477,19 +480,19 @@ contains
 
   real(8) function cspe(ee,ep) !d(sigma)/dk cross section in photon energy (KOCH-MOTZ)
     real(8) ep, ee
-    real(8) p0, p, E0, E, eps, eps0, k, L
+    real(8) p0, p, E0, E, eps, eps0, k, L, me
     integer, parameter :: rel=1
     if(ep.lt.ee) then
-      E0=ee/(511)+1
-      k=ep/(511)
+      E0=ee/me+1d0
+      k=ep/me
       E=E0-k
 
-      p0=dsqrt(E0**2-1)
-      p=dsqrt(E**2-1)
+      p0=dsqrt(E0**2-1d0)
+      p=dsqrt(E**2-1d0)
 
       eps0=dlog((E0+p0)/(E0-p0))
       eps=dlog((E+p)/(E-p))
-      L=2*dlog((E0*E+p0*p-(1))/(k))
+      L=2*dlog((E0*E+p0*p-(1d0))/(k))
       !print *, E0, E, p0, p, eps0, eps
       cspe=(eps0*((E0*E+p0**2)/(p0**3)))+((2*k*E0*E)/((p**2)*(p0**2))) &
       -(eps*((E0*E+p**2)/(p**3)))
@@ -505,12 +508,62 @@ contains
       cspe=(r0**2)*afs*cspe!*(1/(p0**2))*dlog((p0+p)/(p0-p))
       ! cspe=cspe/(511)
       if(rel.eq.0) then
-        cspe=(dlog((1.0+dsqrt(1.0-(ep/ee)))/(1.0-dsqrt(1.0-(ep/ee)))))/((ep)*(ee)) !NRBH
+        cspe=(dlog((1d0+dsqrt(1d0-(ep/ee)))/(1d0-dsqrt(1d0-(ep/ee)))))/((ep)*(ee)) !NRBH
       end if
     else
         cspe=0
     end if
   end function cspe
+
+  real(8) function cspax(ee,ep,z)
+    ! Approximated equation for e-i bremsstrahlung cross-section (equation 4 in Haug 1997a)
+    ! Accurate to semirelativistic energies. 
+    ! https://ui.adsabs.harvard.edu/abs/1997A%26A...326..417H/abstract
+    ! See IDL version from SSWIDL xray module:
+    ! https://hesperia.gsfc.nasa.gov/ssw/packages/xray/idl/brm/brm_bremcross.pro
+
+    real(8), intent(in) :: ee, ep, z
+    real(8) :: eps1, eps2, p1, p2, k
+    real(8) :: term1, term2, factor1, factor2, factor3
+    real(8) :: a_1, a_2, elw_factor
+
+    if(ep.lt.ee) then
+      eps1 = ee/me + 1d0
+      k = ep/me
+      eps2 = eps1 - k
+      
+      if (eps2 <= 1d0) then
+        cspax = 0d0
+        return
+      end if
+
+      p1 = dsqrt(eps1**2 - 1d0)
+      p2 = dsqrt(eps2**2 - 1d0)
+
+      term1 = 1d0 + (1d0/(eps1*eps2)) + (7d0/2d1)*((p1**2 + p2**2)/((eps1*eps2)**3))
+      term1 = term1 + (((9d0/28d0)*(k**2) + (263d0/21d1)*(p1**2 * p2**2))/((eps1*eps2)**3))
+      term1 = term1 * ((p1 * p2)/(eps1*eps2))
+      
+      term2 = 2d0 * dlog((eps1*eps2 + p1*p2 - 1d0)/(k))
+
+      factor1 = term2 - term1
+
+      factor2 = (4d0/3d0)*(eps1*eps2) + k**2 - (7d0/15d0)*(k**2 / (eps1*eps2))
+      factor2 = factor2 - (11d0/7d1)*((k**2)*(p1**2 + p2**2)/((eps1*eps2)**4))
+
+      factor3 = 2d0 * afs * (z**2) * (r0**2) / (k * (p1**2))
+
+      a_1 = afs * z * eps1 / p1
+      a_2 = afs * z * eps2 / p2
+      elw_factor = (a_2 / a_1) * (1d0 - dexp(-2d0 * pi * a_1)) / (1d0 - dexp(-2d0 * pi * a_2))
+      
+      cspax = elw_factor * factor1 * factor2 * factor3
+      
+    else 
+      cspax=0d0
+    end if
+
+  end function cspax
 
   real(8) function cs1(ep,ee,ca,z)
     !GLUCKSTERN-HULL (d sigma / dk d Omega)
@@ -566,6 +619,7 @@ contains
     ! Calculate double differential electron-electron bremsstrahlung cross-section in lab. system
     ! Input: electron kinetic energy, photon energy in keV and angle cosine
     
+    use ieee_arithmetic, only: ieee_is_nan
     double precision ee,ep,ca
     double precision eps1,p1,k !normalized units
     double precision x1,x2,omega2,rho2,omega,rho
@@ -588,7 +642,7 @@ contains
     Fee=(a2*(exp(2d0*pi*a1)-1d0))/(a1*(exp(2d0*pi*a2)-1d0))
 
     eeba=alpha(omega2,rho2,x1,x2)+alpha(omega2,rho2,x2,x1) !dimensionless
-    if(isnan(eeba)) then
+    if(ieee_is_nan(eeba)) then
       eeba=0
     else
       eeba=eeba*afs*(r0**2)*k/(pi*omega*rho*dsqrt(omega2-4d0))

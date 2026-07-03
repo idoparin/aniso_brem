@@ -1,6 +1,6 @@
 # aniso-brem
 
-Relativistic electron-ion and electron-electron bremsstrahlung cross sections (Fortran + Python).
+Routines to calculate Hard X-ray and continuum gamma-ray flux using electron-ion and electron-electron bremsstrahlung cross sections (Fortran + Python interface).
 
 ## Install
 
@@ -20,21 +20,6 @@ Optional test dependencies:
 
 ```bash
 pip install -e ".[test,examples]"
-```
-
-## Usage
-
-```python
-from aniso_brem import eebls, cspe, eebapx
-
-sigma_ee = eebls(electron_keV=1500.0, photon_keV=100.0, xparts=500)
-sigma_ei = cspe(electron_keV=1500.0, photon_keV=100.0)
-```
-
-Run the example plot:
-
-```bash
-python examples/eerel_cs_example.py --show
 ```
 
 ## Third-party code

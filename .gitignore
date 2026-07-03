@@ -10,4 +10,5 @@ dist/
 .eggs/
 .ipynb_checkpoints/
 *.pdf
+*.png
 .env
