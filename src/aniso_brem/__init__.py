@@ -125,9 +125,10 @@ def eeb_emin(photon_energy):
     ``photon_energy`` in isotropic e-e bremsstrahlung (Haug 1975, eq. 2.6).
 
     Accepts a scalar or numpy array (vectorized in numpy)."""
-    k = np.asarray(photon_energy, dtype=np.float64) / me
+    ep = np.asarray(photon_energy, dtype=np.float64)
+    k = ep / me
     s = np.sqrt(k * k + 4.0 * k)
-    return photon_energy * (2.0 + 3.0 * k - s) / (1.0 - k * k + k * s)
+    return ep * (2.0 + 3.0 * k - s) / (1.0 - k * k + k * s)
 
 
 def eeb_cross(electron_energy, photon_energy, z=1.2, ep_switch=150.0, xparts=32):
