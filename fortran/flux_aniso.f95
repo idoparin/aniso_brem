@@ -160,9 +160,8 @@ contains
       return
     end if
 
-    theta(1) = 0d0
-    do i = 2, n_theta
-      theta(i) = dble(i)*pi/dble(n_theta)
+    do i = 1, n_theta
+      theta(i) = dble(i - 1)*pi/dble(n_theta - 1)
     end do
 
     allocate(g_raw(n_theta), integrand(n_theta))
